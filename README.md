@@ -92,10 +92,10 @@ Gerenciado com a biblioteca **django-role-permissions**.
 
 ```bash
 # Clonar o repositório
-git clone https://github.com/Johnny-Duart/flask-blog-api.git
+git clone https://github.com/Johnny-Duart/Oraculo_IA.git
 
 # Entrar na pasta
-cd flask-blog-api
+cd Oraculo_IA
 
 # Criar ambiente virtual
 python -m venv venv
