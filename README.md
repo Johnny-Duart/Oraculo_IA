@@ -88,16 +88,6 @@ Gerenciado com a biblioteca **django-role-permissions**.
 
 ---
 
-## 📌 Próximos passos
-
-- [ ] Implementar lógica completa do chat (RAG)  
-- [ ] Melhorar UI do chatbot  
-- [ ] Adicionar histórico de conversas  
-- [ ] Deploy em produção  
-- [ ] Otimização de embeddings e busca  
-
----
-
 ## ▶️ Como rodar o projeto
 
 ```bash
