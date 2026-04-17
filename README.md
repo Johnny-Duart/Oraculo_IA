@@ -111,3 +111,25 @@ python manage.py migrate
 
 # Iniciar servidor
 python manage.py runserver
+```
+
+## 💡 Diferenciais do projeto
+Aplicação prática de RAG
+Uso de processamento assíncrono
+Integração com múltiplas fontes de dados
+Estrutura próxima de sistemas reais de IA
+
+---
+
+## 👨‍💻 Autor
+
+Desenvolvido por Jonathan Duarte
+
+---
+
+⚠️ Observação
+
+Este projeto está em desenvolvimento e pode sofrer alterações frequentes.
+
+---
+
