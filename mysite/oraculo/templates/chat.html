@@ -27,17 +27,15 @@
         </header>
         <div class="px-4 md:px-0">
             <div class="mx-auto bg-slate-50 mt-8 max-w-4xl px-4 py-16 sm:px-6 lg:px-8 border border-slate-200/60 rounded-md">
-    
-                <!-- Container principal empilhando tudo -->
+
                 <div class="flex flex-col gap-6" id="chat">
 
-                    <!-- Mensagem do assistente -->
                     <div class="flex items-start gap-2.5">
                         <img class="w-12 h-12 rounded-full" src="{% static 'assistente_virtual.png' %}" alt="Jese image">
                         <div class="flex flex-col gap-1 w-full max-w-[320px]">
                             <div class="flex items-center space-x-2 rtl:space-x-reverse">
                             <span class="text-sm font-semibold text-gray-900">Iazete</span>
-                            <span class="text-sm font-normal text-gray-500">11:46</span>
+                            <span id="hora-inicial" class="text-sm font-normal text-gray-500"></span>
                             </div>
                             <div class="flex flex-col leading-1.5 p-4 border-gray-200 bg-gray-200 rounded-e-xl rounded-es-xl">
                             <p class="text-sm font-normal py-2.5 text-gray-900">
@@ -77,7 +75,104 @@
 
 
     </main>
+    <script>
+        function getHoraAtual() {
+            const agora = new Date();
+            return agora.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const el = document.getElementById("hora-inicial");
+            if (el) {
+                el.innerText = getHoraAtual();
+            }
+        });
+        document.getElementById('form-pergunta').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const pergunta = document.getElementById('pergunta').value;
+            const formData = new FormData();
+            formData.append('pergunta', pergunta);
+
+            try {
+                const response = await fetch("{% url 'chat' %}", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const data = await response.json();
+                const perguntaId = data.id;
+                console.log("ID salvo:", perguntaId);
+
+                const novaMensagem1 = document.createElement("div");
+                novaMensagem1.className = "flex items-start gap-2.5 justify-end";
+                novaMensagem1.innerHTML = `
+                    <div class="flex flex-col gap-1 w-full max-w-[320px] text-right">
+                        <div class="flex items-center justify-end space-x-2 rtl:space-x-reverse">
+                        <span class="text-sm font-normal text-gray-500">11:46</span>
+                        <span class="text-sm font-semibold text-gray-900">Você</span>
+                        </div>
+                            <div class="flex flex-col leading-1.5 p-4 bg-lime-200 text-gray-900 rounded-s-xl rounded-ee-xl">
+                            <p class="text-sm font-normal py-2.5">
+                                ${pergunta}
+                            </p>
+                        </div>
+                    </div>`;
+
+                document.getElementById("chat").appendChild(novaMensagem1);
+
+            
+                const novaMensagem = document.createElement("div");
+                novaMensagem.className = "flex items-start gap-2.5";
+            
+                novaMensagem.innerHTML = `
+                    <img class="w-12 h-12 rounded-full" src="{% static 'assistente_virtual.png' %}">
+                    <div class="flex flex-col gap-1 w-full max-w-[320px]">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm font-semibold text-gray-900">Iazete</span>
+                            <span class="text-sm font-normal text-gray-500">${getHoraAtual()}</span>
+                        </div>
+                        <div class="p-4 bg-gray-200 rounded-e-xl rounded-es-xl">
+                            <p id="resposta-Iazete-${perguntaId}" class="text-sm text-gray-900"></p>
+                        </div>
+                        <a href="/oraculo/ver_fontes/${perguntaId}" class="text-sm text-gray-500">
+                            Confira as fontes
+                        </a>
+                    </div>
+                `;
+
+                document.getElementById("chat").appendChild(novaMensagem);
+
+                const streamResponse = await fetch("{% url 'stream_response' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: new URLSearchParams({ id_pergunta: perguntaId }),
+                });
+                
 
 
 
+                const reader = streamResponse.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                const respostaElemento = document.getElementById(`resposta-Iazete-${perguntaId}`);
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    respostaElemento.innerText += chunk;
+                    console.log(chunk);
+                }
+
+            } catch (error) {
+                console.error("Erro:", error);
+            }
+        });
+    </script>
 {% endblock 'conteudo' %}
