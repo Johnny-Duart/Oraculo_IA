@@ -1,0 +1,28 @@
+# Banco de dados
+mysite/db.sqlite3
+
+# Media uploads
+mysite/media/
+
+# Vetores FAISS
+mysite/banco_faiss/
+
+# Python
+__pycache__/
+*.pyc
+
+# Ambiente virtual
+.venv/
+venv/
+mysite/.venv/
+mysite/venv/
+
+# Django
+mysite/staticfiles/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
