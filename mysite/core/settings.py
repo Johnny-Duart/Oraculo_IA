@@ -147,8 +147,15 @@ MESSAGES_TAGS = {
 Q_CLUSTER = {
     "name": "ia",
     "workers": 1,
-    "timeout": 300, 
+    "timeout": 300,
     "retry": 400,
     "queue_limit": 50,
     "orm": "default",
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "TIMEOUT": 180,
+    }
 }

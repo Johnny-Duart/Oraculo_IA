@@ -309,7 +309,7 @@ version = "2025.4.26"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "certifi-2025.4.26-py3-none-any.whl", hash = "sha256:30350364dfe371162649852c63336a15c70c6510c2ad5015b21c2345311805f3"},
     {file = "certifi-2025.4.26.tar.gz", hash = "sha256:0a816057ea3cdefcef70270d2c515e4506bbc954f417fa5ade2021213bb8f0c6"},
@@ -419,7 +419,7 @@ version = "3.4.2"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
 optional = false
 python-versions = ">=3.7"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "charset_normalizer-3.4.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:7c48ed483eb946e6c04ccbe02c6b4d1d48e51944b6db70f697e089c193404941"},
     {file = "charset_normalizer-3.4.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b2d318c11350e10662026ad0eb71bb51c7812fc8590825304ae0bdd4ac283acd"},
@@ -946,7 +946,7 @@ version = "3.10"
 description = "Internationalized Domain Names in Applications (IDNA)"
 optional = false
 python-versions = ">=3.6"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "idna-3.10-py3-none-any.whl", hash = "sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3"},
     {file = "idna-3.10.tar.gz", hash = "sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9"},
@@ -1393,6 +1393,27 @@ groups = ["main"]
 files = [
     {file = "mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505"},
     {file = "mypy_extensions-1.1.0.tar.gz", hash = "sha256:52e68efc3284861e772bbcd66823fde5ae21fd2fdb51c62a211403730b916558"},
+]
+
+[[package]]
+name = "ngrok"
+version = "1.7.0"
+description = "The ngrok Agent SDK for Python"
+optional = false
+python-versions = ">=3.12"
+groups = ["main", "dev"]
+files = [
+    {file = "ngrok-1.7.0-cp310-abi3-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:97ed4d29ed65f00acaeaa958324aeec32f2f3b07042090fe91d30b47429b7994"},
+    {file = "ngrok-1.7.0-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:b96b5efc8d6bb0f5551005e4d813a05fa7ccae057c30719934d6f6d7ae6858c6"},
+    {file = "ngrok-1.7.0-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:8b95a3e1ca6f8120395a118ae85ad940197b4565c530f1941678770e3be63bde"},
+    {file = "ngrok-1.7.0-cp310-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a0c63849756558cf79186cc75b4b58175cbc907d14a5d907175627c5ce6201db"},
+    {file = "ngrok-1.7.0-cp310-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:69a483a27945ff95a5976cfa317ca504ec121c07d147f2dc98ffe15b36ff7e51"},
+    {file = "ngrok-1.7.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0f3793cec6e52d8aff427fc1ddbf914c3b51f0e28240187bdaf27fd0ba8521f0"},
+    {file = "ngrok-1.7.0-cp310-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:4b1acf42cf7489b2356c4d8d5075d3f5d989a4972037bb717ffe7308bb9bcac8"},
+    {file = "ngrok-1.7.0-cp310-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:567acd8edcb89fb3f4f387d347b4ddb0f9245348aecd5b490dfbd6e2e192dbd8"},
+    {file = "ngrok-1.7.0-cp310-abi3-win32.whl", hash = "sha256:7927b73aaf04d33fdc0a17e6a354854c8aab08afa92a1e0840946f4969aeeae1"},
+    {file = "ngrok-1.7.0-cp310-abi3-win_amd64.whl", hash = "sha256:270c3f1638408cf75ac6ac88b4afb2676a2b97a191c5d9cff7ccaa5c7819469a"},
+    {file = "ngrok-1.7.0-cp310-abi3-win_arm64.whl", hash = "sha256:cfa809dff993c5feecafe5899010c1b85c27e242d051246a3872bdb2d7ca3bec"},
 ]
 
 [[package]]
@@ -1913,7 +1934,7 @@ version = "1.1.0"
 description = "Read key-value pairs from a .env file and set them as environment variables"
 optional = false
 python-versions = ">=3.9"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "python_dotenv-1.1.0-py3-none-any.whl", hash = "sha256:d7c01d9e2293916c18baf562d95698754b0dbbb5e74d457c45d4f6561fb9d55d"},
     {file = "python_dotenv-1.1.0.tar.gz", hash = "sha256:41f90bc6f5f177fb41f53e87666db362025010eb28f60a01c9143bfa33a2b2d5"},
@@ -2110,7 +2131,7 @@ version = "2.32.3"
 description = "Python HTTP for Humans."
 optional = false
 python-versions = ">=3.8"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "requests-2.32.3-py3-none-any.whl", hash = "sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6"},
     {file = "requests-2.32.3.tar.gz", hash = "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760"},
@@ -2488,7 +2509,7 @@ version = "2.4.0"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=3.9"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "urllib3-2.4.0-py3-none-any.whl", hash = "sha256:4e16665048960a0900c702d4a66415956a584919c03361cac9f1df5c5dd7e813"},
     {file = "urllib3-2.4.0.tar.gz", hash = "sha256:414bc6535b787febd7567804cc015fee39daab8ad86268f1310a9250697de466"},
@@ -2747,4 +2768,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<4.0"
-content-hash = "a3af841014fa90311d9e75ac6186f2ba82fdb180128f8c21fb9adbd39a27c9b5"
+content-hash = "7c13758c056feb060ccbf4091ee5aa48ec744d65fc575c4b804a54b015b59826"

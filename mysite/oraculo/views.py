@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from django.conf import settings
+
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
@@ -8,8 +8,10 @@ from django_q.models import Task
 from langchain_community.chat_models import ChatOllama
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.vectorstores import FAISS
-
+import json
 from .models import DataTreinamento, Pergunta, Treinamento
+from django.core.cache import cache
+from .utils import sched_message_response
 
 
 def treinar_ia(request):
@@ -106,3 +108,27 @@ def ver_fontes(request, id):
         print("---")
     print(pergunta.pergunta)
     return render(request, "ver_fontes.html", {"pergunta": pergunta})
+
+
+@csrf_exempt
+def webhook_whatsapp(request):
+
+    data = json.loads(request.body)
+    if data["data"]["key"]["fromMe"]:
+        return HttpResponse("Mensagem ignorada")
+
+    phone = data.get("data").get("key").get("remoteJid").split("@")[0]
+    msg_data = data.get("data", {}).get("message", {})
+
+    message = msg_data.get("extendedTextMessage", {}).get(
+        "text"
+    ) or msg_data.get("conversation")
+
+    buffer = cache.get(f"wa_buffer_{phone}", [])
+    buffer.append(message)
+
+    cache.set(f"wa_buffer_{phone}", buffer, timeout=60)
+
+    sched_message_response(phone)
+
+    return HttpResponse("teste")
