@@ -123,7 +123,7 @@ Estrutura próxima de sistemas reais de IA
 
 ## 👨‍💻 Autor
 
-Desenvolvido por Jonathan Duarte
+Desenvolvido por Jonathan Duarte e Ramon nogueira
 
 ---
 
