@@ -6,4 +6,7 @@ class OraculoConfig(AppConfig):
     name = "oraculo"
 
     def ready(self):
-        import oraculo.signals
+        try:
+            import oraculo.signals
+        except Exception:
+            pass

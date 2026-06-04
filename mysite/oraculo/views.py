@@ -5,13 +5,27 @@ from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django_q.models import Task
-from langchain_community.chat_models import ChatOllama
-from langchain_community.embeddings import OllamaEmbeddings
-from langchain_community.vectorstores import FAISS
+try:
+    from langchain_community.chat_models import ChatOllama
+    from langchain_community.embeddings import OllamaEmbeddings
+    from langchain_community.vectorstores import FAISS
+    LANGCHAIN_AVAILABLE = True
+except Exception:
+    ChatOllama = None
+    OllamaEmbeddings = None
+    FAISS = None
+    LANGCHAIN_AVAILABLE = False
 import json
 from .models import DataTreinamento, Pergunta, Treinamento
 from django.core.cache import cache
-from .utils import sched_message_response
+# Import de utilidades que podem requerer dependências externas é feito de forma
+# tardia dentro da view que precisa delas para evitar erros na importação do pacote
+sched_message_response = None
+try:
+    # tentamos importar, se falhar mantemos None e tratamos abaixo
+    from .utils import sched_message_response
+except Exception:
+    sched_message_response = None
 
 
 def treinar_ia(request):
@@ -49,10 +63,26 @@ def stream_response(request):
     pergunta = Pergunta.objects.get(id=id_pergunta)
 
     def stream_generator():
+        if not LANGCHAIN_AVAILABLE:
+            yield "Funcionalidade indisponível: dependências LangChain/faiss não estão instaladas.\n"
+            return
+
+        # Verifica se as dependências de embeddings/FAISS estão disponíveis
+        if OllamaEmbeddings is None or FAISS is None:
+            yield "Funcionalidade indisponível: dependências LangChain/faiss não estão instaladas.\n"
+            return
+
         embeddings = OllamaEmbeddings(model="nomic-embed-text")
-        vectordb = FAISS.load_local(
-            "banco_faiss", embeddings, allow_dangerous_deserialization=True
-        )
+        try:
+            vectordb = FAISS.load_local(
+                "banco_faiss", embeddings, allow_dangerous_deserialization=True
+            )
+        except Exception:
+            # Se o índice local não existir ou houver erro no FAISS, avisamos o usuário
+            yield (
+                "Base de busca (FAISS) não encontrada ou erro ao carregar. Execute o treinamento em 'Treinar IA' antes de perguntar.\n"
+            )
+            return
 
         docs = vectordb.max_marginal_relevance_search(
             pergunta.pergunta, k=5, fetch_k=20

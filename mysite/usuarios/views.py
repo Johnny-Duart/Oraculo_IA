@@ -91,3 +91,12 @@ def remover_gerente(request, user_id):
     user.groups.remove(grupo)
 
     return redirect("permissoes")
+
+
+from django.contrib.auth import logout as auth_logout
+
+
+def logout_view(request):
+    """Desloga o usuário e redireciona para a tela de login."""
+    auth_logout(request)
+    return redirect("login")

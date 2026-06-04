@@ -14,6 +14,7 @@ __pycache__/
 # Ambiente virtual
 .venv/
 venv/
+venv311/
 mysite/.venv/
 mysite/venv/
 
@@ -27,3 +28,7 @@ mysite/staticfiles/
 # Logs
 *.log
 mysite/oraculo/.env
+
+#tmp
+tmp_requirements.txt
+tmp_requirements2.txt

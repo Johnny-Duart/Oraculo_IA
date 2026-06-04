@@ -1,12 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <title>{% block title %}Oráculo IA{% endblock %}</title>
+        {% load static %}
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="{% static 'css/main.css' %}">
     </head>
-    <body>
-        {% block 'conteudo' %}
-        {% endblock 'conteudo' %}
+    <body class="bg-gray-50 text-gray-800 antialiased">
+
+        <nav class="bg-white border-b shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex h-16 items-center justify-between">
+                    <div class="flex items-center gap-6">
+                        <a href="/" class="flex items-center gap-3">
+                            <img src="{% static 'logo.svg' %}" alt="Oráculo IA" class="h-8 w-8">
+                            <span class="font-semibold text-lg">Oráculo IA</span>
+                        </a>
+
+                        <div class="hidden sm:flex sm:items-center sm:space-x-4">
+                            {% url 'chat' as chat_url %}{% if chat_url %}
+                                <a href="{{ chat_url }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Chat</a>
+                            {% endif %}
+                            {% url 'treinar_ia' as treinar_url %}{% if treinar_url %}
+                                <a href="{{ treinar_url }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Treinar IA</a>
+                            {% endif %}
+                            {% url 'permissoes' as perm_url %}{% if perm_url and request.user.is_superuser %}
+                                <a href="{{ perm_url }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Permissões</a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        {% if request.user.is_authenticated %}
+                            <span class="text-sm text-gray-700 hidden sm:inline">Olá, {{ request.user.username }}</span>
+                            {% url 'logout' as logout_url %}{% if logout_url %}
+                                <a href="{{ logout_url }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">Sair</a>
+                            {% endif %}
+                        {% else %}
+                            {% url 'login' as login_url %}{% if login_url %}
+                                <a href="{{ login_url }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">Entrar</a>
+                            {% endif %}
+                            {% url 'cadastro' as cad_url %}{% if cad_url %}
+                                <a href="{{ cad_url }}" class="text-sm text-gray-700 hover:text-gray-900">Criar conta</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+            {% if messages %}
+                <div class="mb-6">
+                    {% for message in messages %}
+                        <div class="rounded-md p-4 mb-2 {% if 'error' in message.tags %}bg-red-50 text-red-700{% elif 'success' in message.tags %}bg-green-50 text-green-700{% else %}bg-yellow-50 text-yellow-700{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block conteudo %}
+            {% endblock %}
+        </main>
+
+        <footer class="bg-white border-t">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm text-gray-500">
+                {% now "Y" as current_year %}
+                &copy; {{ current_year }} Oráculo IA — Desenvolvido por Jonathan Duarte e Ramon Nogueira
+            </div>
+        </footer>
+
+        <script src="{% static 'js/main.js' %}"></script>
     </body>
 </html>

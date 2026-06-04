@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load permission_tags %}
 
-{% block 'conteudo' %}
+{% block conteudo %}
     <main>
         <header class="relative isolate bg-lime-200/80">
             <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -16,7 +16,7 @@
                         <a href="{% url 'treinar_ia' %}"
                            type="button"
                            class="hidden text-sm/6 font-semibold text-gray-900 sm:block">Treinamento da IA</a>
-                          <a href="{% url "chat" %}"
+                          <a href="{% url 'chat' %}"
                            type="button"
                            class="hidden text-sm/6 font-semibold text-gray-900 sm:block">Perguntar</a>
                     </div>
@@ -145,4 +145,4 @@
     </div>
 </div>
 </main>
-{% endblock 'conteudo' %}
+{% endblock %}
