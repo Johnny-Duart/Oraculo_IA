@@ -58,12 +58,15 @@ class BaseEvolutionAPI:
 
 
 class SendMessage(BaseEvolutionAPI):
-    def send_message(self, instance, number, text):
-        path = f"/message/sendText/{instance}/"
+    def send_message(self, instance, remote_jid, text):
+        instance_clean = str(instance).lower()
+        path = f"/message/sendText/{instance_clean}"
+
+
         body = {
-            "number": number,
+            "number": remote_jid,           
             "textMessage": {"text": text},
-        }
+            }
         return self._send_request(
             path=path,
             method="POST",
@@ -76,7 +79,7 @@ if __name__ == "__main__":
 
     response = client.send_message(
         instance="oraculo",
-        number=os.getenv("TEST_PHONE"),
+        remote_jid=os.getenv("TEST_PHONE"),
         text="Olá, estou enviando uma mensagem 🚀",
     )
 
