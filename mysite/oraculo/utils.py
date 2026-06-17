@@ -1,6 +1,3 @@
-# Tornar imports opcionais para permitir execução da aplicação mesmo quando
-# dependências opcionais (requests, bs4, langchain, faiss, etc.) não estiverem
-# presentes no ambiente de desenvolvimento.
 try:
     import requests
 except Exception:
@@ -134,26 +131,29 @@ else:
     scheduler = None
 
 
-def send_message_response(phone):
-
+def send_message_response(remote_jid, phone):
+    print("1 - Entrou na função")
     messages = cache.get(f"wa_buffer_{phone}", [])
+    print("2 - Mensagens:", messages)
+
     if messages:
         question = "\n".join(messages)
 
-        print(question)
-
+        print("3 - Pergunta:", question)
         if OllamaEmbeddings is None or FAISS is None:
             return
 
         embeddings = OllamaEmbeddings(model="nomic-embed-text")
-
+        print("4 - Embeddings OK")
         vectordb = FAISS.load_local(
             "banco_faiss", embeddings, allow_dangerous_deserialization=True
         )
+        print("5 - Banco carregado")
 
         docs = vectordb.max_marginal_relevance_search(
             question, k=5, fetch_k=20
         )
+        print("6 - Busca OK")
         context = "\n\n".join([doc.page_content for doc in docs])
         messages = [
             {
@@ -165,35 +165,46 @@ def send_message_response(phone):
                 "content": question,
             },
         ]
-
+        print("7 - Contexto OK")
         if ChatOllama is None:
             return
 
         llm = ChatOllama(model="llama3")
-
+        print("8 - LLM criado")
         response = llm.invoke(messages).content
 
+        print("RESPOSTA GERADA:")
+        print(response)
         if SendMessage is not None:
             try:
-                SendMessage().send_message(
+                resp = SendMessage().send_message(
                     instance="oraculo",
-                    number=phone,
+                    remote_jid=remote_jid,
                     text=response,
                 )
+
+                print("STATUS:", resp.status_code)
+                print("RESPOSTA:", resp.text)
+
+                if resp.status_code in [200, 201]:
+                    print("10 - Mensagem enviada")
+                else:
+                    print("ERRO AO ENVIAR")
             except Exception:
                 pass
 
         cache.delete(f"wa_buffer_{phone}")
         cache.delete(f"wa_timer_{phone}")
+        print("10 - Mensagem enviada")
 
 
-def sched_message_response(phone):
+def sched_message_response(remote_jid, phone):
     if not cache.get(f"wa_timer_{phone}"):
         scheduler.add_job(
             send_message_response,
             "date",
             run_date=datetime.now() + timedelta(seconds=15),
-            kwargs={"phone": phone},
+            kwargs={"remote_jid": remote_jid, "phone": phone},
             misfire_grace_time=60,
         )
         cache.set(f"wa_timer_{phone}", True, timeout=60)
