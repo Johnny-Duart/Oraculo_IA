@@ -1,14 +1,19 @@
 from pathlib import Path
 
-
+from django.core.cache import cache
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django_q.models import Task
+
+from .models import DataTreinamento, Pergunta, Treinamento
+from .utils import send_message_response
+
 try:
     from langchain_community.chat_models import ChatOllama
     from langchain_community.embeddings import OllamaEmbeddings
     from langchain_community.vectorstores import FAISS
+
     LANGCHAIN_AVAILABLE = True
 except Exception:
     ChatOllama = None
@@ -16,16 +21,17 @@ except Exception:
     FAISS = None
     LANGCHAIN_AVAILABLE = False
 import json
-from .models import DataTreinamento, Pergunta, Treinamento
-from django.core.cache import cache
-# Import de utilidades que podem requerer dependências externas é feito de forma
-# tardia dentro da view que precisa delas para evitar erros na importação do pacote
+
 sched_message_response = None
+send_message_response = None
+
 try:
-    # tentamos importar, se falhar mantemos None e tratamos abaixo
-    from .utils import sched_message_response
+    from .utils import (
+        sched_message_response,
+        send_message_response,
+    )
 except Exception:
-    sched_message_response = None
+    pass
 
 
 def treinar_ia(request):
@@ -142,23 +148,69 @@ def ver_fontes(request, id):
 
 @csrf_exempt
 def webhook_whatsapp(request):
+    print("Webhook recebeu uma requisição:", request.method)
+    print(request.method)
+    print(request.path)
+    print(request.method)
+    print(request.body)
+    if request.method == "GET":
+        return HttpResponse("Webhook funcionando!")
+    if request.method != "POST":
+        return HttpResponse("Apenas POST")
 
-    data = json.loads(request.body)
-    if data["data"]["key"]["fromMe"]:
-        return HttpResponse("Mensagem ignorada")
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return HttpResponse("JSON inválido", status=400)
 
-    phone = data.get("data").get("key").get("remoteJid").split("@")[0]
+    key_data = data.get("data", {}).get("key", {})
+
+    from_me = key_data.get("fromMe", False)
+
+    if from_me:
+        print("Mensagem enviada pelo próprio bot (fromMe=True). Ignorando.")
+        return HttpResponse("Ignorado: Mensagem do próprio bot")
+
+    remote_jid = key_data.get("remoteJid", "")
+
+    if not remote_jid or remote_jid == "status@broadcast":
+        return HttpResponse("JID inválido ou broadcast ignorado", status=400)
+
+    actual_sender = data.get("data", {}).get("participant")
+    if actual_sender and "@s.whatsapp.net" in actual_sender:
+        remote_jid = actual_sender
+
+    phone = remote_jid.split("@")[0]
+
+    print("REMOTE JID ORIGINAL:", remote_jid)
+    print("PHONE LIMPO:", phone)
+    message_text = ""
+    print(json.dumps(data, indent=2))
     msg_data = data.get("data", {}).get("message", {})
 
-    message = msg_data.get("extendedTextMessage", {}).get(
-        "text"
-    ) or msg_data.get("conversation")
+    if "conversation" in msg_data:
+        message_text = msg_data.get("conversation")
+    elif "extendedTextMessage" in msg_data:
+
+        message_text = msg_data.get("extendedTextMessage", {}).get("text")
+    elif "imageMessage" in msg_data:
+
+        message_text = msg_data.get("imageMessage", {}).get("caption")
+
+    if not message_text:
+        print(
+            "Mensagem sem texto ou tipo não suportado (ex: áudio/figurinha sem transcrição)."
+        )
+        return HttpResponse("Mensagem sem texto ignorada")
+    print(f"MENSAGEM RECEBIDA DE {phone}: {message_text}")
 
     buffer = cache.get(f"wa_buffer_{phone}", [])
-    buffer.append(message)
+    buffer.append(message_text)
 
     cache.set(f"wa_buffer_{phone}", buffer, timeout=60)
 
-    sched_message_response(phone)
-
-    return HttpResponse("teste")
+    if sched_message_response:
+        sched_message_response(remote_jid, phone)
+    else:
+        send_message_response(remote_jid, phone)
+    return HttpResponse("Sucesso")
