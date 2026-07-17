@@ -1,6 +1,6 @@
+import os
 import requests
 from urllib.parse import urlencode, urljoin
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,9 +8,13 @@ load_dotenv()
 
 class BaseEvolutionAPI:
     def __init__(self):
-
         self._BASE_URL = os.getenv("EVOLUTION_BASE_URL")
         self._API_KEY = os.getenv("AUTHENTICATION_API_KEY")
+
+        if not self._BASE_URL or not self._API_KEY:
+            raise RuntimeError(
+                "EVOLUTION_BASE_URL ou AUTHENTICATION_API_KEY não definidos no .env"
+            )
 
     def _send_request(
         self, path, method="GET", body=None, headers=None, params_url=None
@@ -62,11 +66,25 @@ class SendMessage(BaseEvolutionAPI):
         instance_clean = str(instance).lower()
         path = f"/message/sendText/{instance_clean}"
 
+<<<<<<< Updated upstream
 
         body = {
             "number": remote_jid,           
             "textMessage": {"text": text},
             }
+=======
+        # A Evolution API v2 espera o número "limpo", sem o sufixo @s.whatsapp.net
+        numero = remote_jid.split("@")[0] if "@" in remote_jid else remote_jid
+
+        # FORMATO CORRIGIDO: a v2 espera "text" direto, sem aninhar em "textMessage".
+        # O formato antigo {"textMessage": {"text": ...}} é o que estava causando
+        # o erro de envio depois que a versão da API mudou.
+        body = {
+            "number": numero,
+            "text": text,
+        }
+
+>>>>>>> Stashed changes
         return self._send_request(
             path=path,
             method="POST",
@@ -77,11 +95,20 @@ class SendMessage(BaseEvolutionAPI):
 if __name__ == "__main__":
     client = SendMessage()
 
+    telefone_teste = os.getenv("TEST_PHONE")
+    if not telefone_teste:
+        raise SystemExit("Defina TEST_PHONE no .env antes de rodar este teste.")
+
     response = client.send_message(
+<<<<<<< Updated upstream
         instance="oraculo",
         remote_jid=os.getenv("TEST_PHONE"),
+=======
+        instance=os.getenv("EVOLUTION_INSTANCE_NAME", "oraculo"),
+        remote_jid=telefone_teste,
+>>>>>>> Stashed changes
         text="Olá, estou enviando uma mensagem 🚀",
     )
 
-    print(response.status_code)
-    print(response.text)
+    print("STATUS:", response.status_code)
+    print("RESPOSTA:", response.text)
