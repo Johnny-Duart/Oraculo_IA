@@ -58,7 +58,6 @@ def treinar_ia(request):
         return redirect("treinar_ia")
 
 
-@login_required
 @csrf_exempt
 def chat(request):
     if request.method == "GET":
