@@ -26,7 +26,7 @@ except ImportError as e:
         print(f"ERRO: OllamaEmbeddings indisponível: {e2}")
         OllamaEmbeddings = None
 
-gtry:
+try:
     from langchain_community.vectorstores import FAISS
 except Exception as e:
     print(f"ERRO: FAISS indisponível: {e}")
