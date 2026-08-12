@@ -7,34 +7,25 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Bug #15 corrigido: carrega variáveis do arquivo mysite/.env
 load_dotenv(BASE_DIR / ".env")
 
-# Bug #15 corrigido: SECRET_KEY vem do .env, não mais hardcoded no código-fonte.
-# Se não existir no .env, usa um fallback inseguro que deixa claro que precisa ser trocado.
-SECRET_KEY = os.getenv(
-    "SECRET_KEY",
-    "django-insecure-TROQUE-ISSO-NO-ENV-nao-use-em-producao"
-)
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY não configurada no ambiente")
+
+AUTHENTICATION_API_KEY = os.getenv("AUTHENTICATION_API_KEY")
+
+EVOLUTION_WEBHOOK_APIKEY = os.getenv("EVOLUTION_WEBHOOK_APIKEY")
 
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
-<<<<<<< Updated upstream
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     "equate-chloride-penny.ngrok-free.dev",
-=======
-# Bug #15 corrigido: ALLOWED_HOSTS vem do .env — sem URL de ngrok morta hardcoded.
-# No .env: ALLOWED_HOSTS=127.0.0.1,localhost,sua-url.ngrok-free.app
-ALLOWED_HOSTS = [
-    h.strip()
-    for h in os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
-    if h.strip()
->>>>>>> Stashed changes
 ]
 
 
@@ -96,10 +87,16 @@ DATABASES = {
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"
+    },
 ]
 
 
@@ -138,10 +135,6 @@ Q_CLUSTER = {
     "orm": "default",
 }
 
-# Bug #6 corrigido: FileBasedCache funciona cross-process (o LocMemCache não funciona
-# entre o processo do Django e o worker do django-q, fazendo o buffer do WhatsApp
-# desaparecer antes de ser processado).
-# A pasta django_cache/ é criada automaticamente pelo Django na primeira execução.
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
@@ -149,3 +142,7 @@ CACHES = {
         "TIMEOUT": 180,
     }
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://equate-chloride-penny.ngrok-free.dev",
+]
