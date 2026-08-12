@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Treinamento(models.Model):
+gclass Treinamento(models.Model):
     site = models.URLField(blank=True, default="")
     conteudo = models.TextField(blank=True, default="")
     documento = models.FileField(upload_to="documentos", blank=True, null=True)
