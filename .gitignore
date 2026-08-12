@@ -10,18 +10,18 @@ mysite/banco_faiss/
 # Cache do Django
 mysite/django_cache/
 
-# Python
+# Python cache
 __pycache__/
 *.pyc
+
+# Qrcode
+mysite/qrcode.png
+qrcode.png
 
 # Ambiente virtual
 .venv/
 venv/
-<<<<<<< Updated upstream
 venv311/
-=======
-env/
->>>>>>> Stashed changes
 mysite/.venv/
 mysite/venv/
 
@@ -30,6 +30,7 @@ mysite/staticfiles/
 
 # Variáveis de ambiente
 mysite/.env
+.env
 
 # IDE
 .vscode/
@@ -37,14 +38,11 @@ mysite/.env
 
 # Logs
 *.log
-<<<<<<< Updated upstream
 mysite/oraculo/.env
 
 #tmp
 tmp_requirements.txt
 tmp_requirements2.txt
-=======
 
-# QR code gerado localmente
-mysite/oraculo/qrcode.png
->>>>>>> Stashed changes
+
+staticfiles/
