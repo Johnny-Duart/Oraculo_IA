@@ -43,6 +43,7 @@ dependencies = [
     "langchain-core (==0.3.62)",
     "langchain-openai (==0.3.18)",
     "langchain-text-splitters (==0.3.8)",
+    "langchain-ollama (==0.3.0)",
     "langchain-xai (==0.2.4)",
     "langsmith (==0.3.42)",
     "marshmallow (==3.26.1)",
@@ -97,3 +98,5 @@ dev = [
     "requests",
     "ngrok"
 ]
+[tool.poetry]
+package-mode = false
