@@ -1,0 +1,49 @@
+version: "3.8"
+ 
+services:
+  evolution-api:
+    image: evoapicloud/evolution-api:v2.3.7
+    container_name: evolution-api
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTHENTICATION_API_KEY=${AUTHENTICATION_API_KEY}
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://evolution:evolution@evolution-postgres:5432/evolution
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://evolution-redis:6379/6
+    depends_on:
+      - evolution-postgres
+      - evolution-redis
+    volumes:
+      - evolution_instances:/evolution/instances
+ 
+  evolution-postgres:
+    image: postgres:16
+    container_name: evolution-postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=evolution
+      - POSTGRES_PASSWORD=evolution
+      - POSTGRES_DB=evolution
+    ports:
+      - "5432:5432"
+    volumes:
+      - evolution_postgres_data:/var/lib/postgresql/data
+ 
+  evolution-redis:
+    image: redis:7
+    container_name: evolution-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - evolution_redis_data:/data
+ 
+volumes:
+  evolution_instances:
+  evolution_postgres_data:
+  evolution_redis_data:
+ 
