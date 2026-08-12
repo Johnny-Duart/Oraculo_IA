@@ -6,9 +6,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django_q.tasks import async_task
 
-# Bug #10 corrigido: RecursiveCharacterTextSplitter vem de langchain_text_splitters
-# (pacote correto no LangChain 0.3.x, já está nas suas dependências).
-# O fallback para langchain.text_splitter é mantido por compatibilidade.
 try:
     from langchain_text_splitters import RecursiveCharacterTextSplitter
 except ImportError:
@@ -17,14 +14,22 @@ except ImportError:
     except ImportError:
         RecursiveCharacterTextSplitter = None
 
-# Bug #4 corrigido: imports do LangChain agora têm try/except.
-# Sem isso, se o LangChain não estiver instalado, o sinal post_save nunca é
-# registrado e o treinamento da IA para de funcionar silenciosamente.
 try:
-    from langchain_community.embeddings import OllamaEmbeddings
+    from langchain_ollama import OllamaEmbeddings
+except ImportError as e:
+    print(
+        f"AVISO: langchain_ollama indisponível ({e}), tentando langchain_community..."
+    )
+    try:
+        from langchain_community.embeddings import OllamaEmbeddings
+    except Exception as e2:
+        print(f"ERRO: OllamaEmbeddings indisponível: {e2}")
+        OllamaEmbeddings = None
+
+try:
     from langchain_community.vectorstores import FAISS
-except Exception:
-    OllamaEmbeddings = None
+except Exception as e:
+    print(f"ERRO: FAISS indisponível: {e}")
     FAISS = None
 
 from .models import Treinamento
@@ -40,9 +45,16 @@ def signals_treinamento_ia(sender, instance, created, **kwargs):
 
 
 def task_treinar_ia(instance_id):
-    # Checagem de dependências antes de prosseguir
-    if RecursiveCharacterTextSplitter is None or OllamaEmbeddings is None or FAISS is None:
-        print("ERRO: dependências LangChain não disponíveis para treinamento.")
+    if RecursiveCharacterTextSplitter is None:
+        print("ERRO: RecursiveCharacterTextSplitter indisponível.")
+        return
+    if OllamaEmbeddings is None:
+        print(
+            "ERRO: OllamaEmbeddings indisponível (verifique se langchain-ollama está instalado)."
+        )
+        return
+    if FAISS is None:
+        print("ERRO: FAISS indisponível.")
         return
 
     treinamento = Treinamento.objects.get(id=instance_id)
