@@ -66,31 +66,15 @@ class SendMessage(BaseEvolutionAPI):
         instance_clean = str(instance).lower()
         path = f"/message/sendText/{instance_clean}"
 
-<<<<<<< Updated upstream
-
         body = {
-            "number": remote_jid,           
-            "textMessage": {"text": text},
-            }
-=======
-        # A Evolution API v2 espera o número "limpo", sem o sufixo @s.whatsapp.net
-        numero = remote_jid.split("@")[0] if "@" in remote_jid else remote_jid
-
-        # FORMATO CORRIGIDO: a v2 espera "text" direto, sem aninhar em "textMessage".
-        # O formato antigo {"textMessage": {"text": ...}} é o que estava causando
-        # o erro de envio depois que a versão da API mudou.
-        body = {
-            "number": numero,
+            "number": remote_jid,
             "text": text,
         }
-
->>>>>>> Stashed changes
         return self._send_request(
             path=path,
             method="POST",
             body=body,
         )
-
 
 if __name__ == "__main__":
     client = SendMessage()
@@ -100,13 +84,8 @@ if __name__ == "__main__":
         raise SystemExit("Defina TEST_PHONE no .env antes de rodar este teste.")
 
     response = client.send_message(
-<<<<<<< Updated upstream
         instance="oraculo",
         remote_jid=os.getenv("TEST_PHONE"),
-=======
-        instance=os.getenv("EVOLUTION_INSTANCE_NAME", "oraculo"),
-        remote_jid=telefone_teste,
->>>>>>> Stashed changes
         text="Olá, estou enviando uma mensagem 🚀",
     )
 
