@@ -76,6 +76,21 @@
 
     </main>
     <script>
+        function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+                 }
+              }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
         function getHoraAtual() {
             const agora = new Date();
             return agora.toLocaleTimeString([], {
@@ -150,10 +165,11 @@
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded",
+                        "X-CSRFToken": csrftoken,
                     },
                     body: new URLSearchParams({ id_pergunta: perguntaId }),
                 });
-                
+                                
 
 
 
