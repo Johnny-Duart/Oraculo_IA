@@ -15,4 +15,9 @@ urlpatterns = [
         views.remover_gerente,
         name="remover_gerente",
     ),
+    path(
+        "excluir-usuario/<int:user_id>/",
+        views.excluir_usuario,
+        name="excluir_usuario",
+    ),
 ]
