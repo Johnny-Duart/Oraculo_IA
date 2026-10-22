@@ -20,19 +20,21 @@ A proposta é simular um sistema real de IA corporativa, onde usuários treinam 
 
 ## 🧠 Funcionalidades atuais
 
-- ✅ Cadastro e login de usuários
-- ✅ Sistema de permissões (usuário / gerente)
-- ✅ Upload de dados para treinamento:
-  - Sites (web scraping)
-  - Texto manual
-  - Arquivos (PDF)
-- ✅ Processamento assíncrono com filas (Django Q)
-- ✅ Geração de embeddings (Ollama)
-- ✅ Armazenamento vetorial com FAISS
-- ✅ Interface web para treinamento e chat (com streaming de resposta)
-- ✅ **Integração com WhatsApp via Evolution API** — recebe perguntas e responde automaticamente com base no conhecimento treinado
-- ✅ Buffer de mensagens (agrupa múltiplas mensagens do usuário antes de responder)
-- ✅ Autenticação de webhook (validação de apikey)
+- ✅ Cadastro, login e gestão de usuários (com exclusão de colaboradores e travas de segurança)
+- ✅ Sistema de controle de acesso baseado em papéis (RBAC: usuário comum / gerente)
+- ✅ Pipeline de treinamento da IA (RAG multimodal):
+  - Sites (web scraping com bypass anti-bloqueio e sanitização Markdown)
+  - Texto digitado manualmente
+  - Arquivos e documentos (PDF)
+- ✅ Processamento assíncrono em segundo plano (Django Q) com índice vetorial autocicatrizante
+- ✅ Geração de embeddings vetoriais (Ollama / `nomic-embed-text`)
+- ✅ Armazenamento e busca por similaridade com FAISS
+- ✅ Interface web com streaming de respostas em tempo real
+- ✅ Rastreabilidade de fontes com suporte total a Unicode e tratamento dinâmico de links e mídias
+- ✅ **Integração com WhatsApp via Evolution API** — respostas automatizadas e contextualizadas
+- ✅ Buffer inteligente de mensagens (agrupa envios consecutivos antes de processar)
+- ✅ Autenticação de webhook (validação estrita de apikey)
+- ✅ **40 testes automatizados** cobrindo autenticação, permissões, RAG, scraping e segurança
 
 ---
 
@@ -147,14 +149,50 @@ ngrok http 8001
 
 Depois, registre a URL gerada pelo ngrok como webhook na Evolution API (`.../oraculo/webhook_whatsapp/`).
 
+### Testes Automatizados
+
+A aplicação conta com uma suíte de 40 testes automatizados cobrindo autenticação, permissões, RAG, scraping e segurança:
+
+```bash
+# Rodar com Poetry (recomendado)
+poetry run python manage.py test
+
+# Ou com ambiente virtual ativo
+python manage.py test
+```
+
 ---
 
-## 💡 Diferenciais do projeto
+## 🌟 Diferenciais Técnicos e Atualizações Recentes
 
-- Aplicação prática de RAG ponta a ponta
-- Integração real com WhatsApp (não é só um chat web)
-- Processamento assíncrono e resiliente a falhas de dependências (fallbacks explícitos)
-- Estrutura próxima de sistemas reais de atendimento automatizado
+### 1. 🧠 IA, RAG e Web Scraping Resiliente
+* **Web Scraping Anti-Bloqueio:** Cabeçalhos dinâmicos com `User-Agent` de navegador moderno para contornar bloqueios HTTP 403 Forbidden em fontes com proteção anti-bot (como a Wikipedia).
+* **Sanitização Semântica:** Limpeza profunda via BeautifulSoup removendo scripts, navegações, rodapés e referências numéricas, convertendo o conteúdo estruturado em Markdown antes de enviar à base vetorial (FAISS).
+* **Índice FAISS Autocicatrizante:** Fallback automático no pipeline de indexação caso os arquivos do índice vetorial estejam ausentes ou corrompidos, recriando a base do zero sem quebrar a execução assíncrona.
+* **Prompt Engineering Natural:** Respostas humanizadas e diretas, sem marcadores técnicos expositivos (`[CONTEXTO]`, `contexto 1`), capazes de sintetizar múltiplos formatos (sites, PDFs e textos manuais) simultaneamente.
+
+### 2. 🔍 Rastreabilidade e Visualização de Fontes
+* **Detecção Inteligente de Origem:** Tratamento dinâmico para evitar erros 404 ao visualizar fontes — diferenciando com precisão textos digitados, URLs externas e documentos PDF originais armazenados no Django Media.
+* **Blindagem de Caracteres Especiais:** Configuração de I/O em UTF-8 nativo para suporte resiliente a símbolos científicos, fórmulas matemáticas e alfabetos gregos (ex: $\sigma$, $\alpha$), prevenindo falhas de codificação como `UnicodeEncodeError`.
+
+### 3. 👥 Controle de Acesso e Segurança (RBAC)
+* **Gestão Hierárquica:** Acesso diferenciado para Gerentes e Funcionários comuns com validação estrita em rotas sensíveis via `django-role-permissions`.
+* **Travas de Segurança:** Regras de integridade que bloqueiam auto-exclusão da própria conta e protegem contas de superusuários contra remoção indevida.
+
+### 4. 🧪 Engenharia de Software e Qualidade (40 Testes Automatizados)
+Suíte robusta de testes automatizados garantindo a integridade e regressão zero da aplicação:
+* **App `usuarios` (18 testes):** Fluxos de autenticação, força de senhas, login/logout, rotinas de exclusão e controle de permissões.
+* **App `oraculo` (22 testes):** Modelos, parser semântico, chunking, sanitização de texto, suporte a caracteres Unicode especiais e validação de segurança no webhook do WhatsApp.
+
+```bash
+# Rodar a suíte completa de testes
+python manage.py test
+```
+
+### 5. 💡 Diferenciais Arquiteturais
+- **RAG Ponta a Ponta:** Pipeline completo com ingestão multimodal (sites, PDFs, textos), chunking com overlap, embeddings (`nomic-embed-text`) e busca com Maximal Marginal Relevance (MMR).
+- **Integração Real com WhatsApp:** Atendimento corporativo com buffer inteligente de mensagens em cache e webhook autenticado via Evolution API.
+- **Processamento Assíncrono com Django Q:** Filas de tarefas desacopladas para treinamento e geração de embeddings sem travar a interface do usuário.
 
 ---
 
