@@ -73,13 +73,14 @@ def task_treinar_ia(instance_id):
     embeddings = OllamaEmbeddings(model="nomic-embed-text")
 
     db_path = settings.BASE_DIR / "banco_faiss"
-    if os.path.exists(db_path):
+    index_file = os.path.join(db_path, "index.faiss")
+    if os.path.exists(index_file):
         vectordb = FAISS.load_local(
-            db_path, embeddings, allow_dangerous_deserialization=True
+            str(db_path), embeddings, allow_dangerous_deserialization=True
         )
         vectordb.add_documents(chunks)
     else:
         vectordb = FAISS.from_documents(chunks, embeddings)
 
-    vectordb.save_local(db_path)
+    vectordb.save_local(str(db_path))
     print(f"[RAG] Treinamento #{instance_id} indexado e salvo com sucesso no banco_faiss!")
