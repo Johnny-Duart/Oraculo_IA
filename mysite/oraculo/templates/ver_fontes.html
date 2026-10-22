@@ -26,7 +26,7 @@
            <div class="max-w-5xl mx-auto px-4 py-6 space-y-6">
                 
                 <div class="bg-white rounded-xl shadow-md ring-1 ring-gray-200 p-6">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-2 tracking-tight">📌 Pergunta realizada</h2>
+                    <h2 class="text-lg font-semibold text-gray-800 mb-2 tracking-tight">Pergunta realizada</h2>
                     <p class="text-gray-700 text-base leading-relaxed">
                         {{ pergunta.pergunta }}
                     </p>
@@ -34,7 +34,7 @@
 
                 
                 <div class="bg-gray-50 rounded-xl shadow-sm ring-1 ring-gray-200 p-6">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4 tracking-tight">🧠 Contextos utilizados</h2>
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 tracking-tight">Contextos utilizados</h2>
 
                     <div class="divide-y divide-gray-200 space-y-6">
                         {% for contexto in pergunta.data_treinamento.all %}
@@ -53,12 +53,25 @@
                                 </div>
 
                                 
-                                {% if contexto.metadata.arquivo %}
+                                {% if contexto.metadata.arquivo == "Conteúdo digitado" %}
                                     <div class="mt-3">
-                                        <a href="{{ contexto.metadata.arquivo }}" target="_blank"
-                                        class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition">
-                                            Acessar arquivo
-                                        </a>
+                                        <span class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-md border border-emerald-300">
+                                            Fonte: Texto inserido manualmente no treinamento
+                                        </span>
+                                    </div>
+                                {% elif contexto.metadata.arquivo %}
+                                    <div class="mt-3">
+                                        {% if "http://" in contexto.metadata.arquivo or "https://" in contexto.metadata.arquivo %}
+                                            <a href="{{ contexto.metadata.arquivo }}" target="_blank" rel="noopener noreferrer"
+                                               class="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition">
+                                                🌐 Acessar site da fonte: {{ contexto.metadata.arquivo }}
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ contexto.metadata.arquivo }}" target="_blank"
+                                               class="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition">
+                                                Acessar documento original
+                                            </a>
+                                        {% endif %}
                                     </div>
                                 {% else %}
                                     <p class="mt-2 text-sm text-gray-400 italic">Fonte não disponível</p>
