@@ -44,5 +44,8 @@ mysite/oraculo/.env
 tmp_requirements.txt
 tmp_requirements2.txt
 
-
 staticfiles/
+
+# Scripts locais
+iniciar.bat
+*.bat
