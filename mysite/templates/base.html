@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %}Oráculo IA{% endblock %}</title>
         {% load static %}
+        {% load permission_tags %}
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="{% static 'css/main.css' %}">
     </head>
@@ -26,8 +27,11 @@
                             {% url 'treinar_ia' as treinar_url %}{% if treinar_url %}
                                 <a href="{{ treinar_url }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Treinar IA</a>
                             {% endif %}
-                            {% url 'permissoes' as perm_url %}{% if perm_url and request.user.is_superuser %}
-                                <a href="{{ perm_url }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Permissões</a>
+                            {% url 'permissoes' as perm_url %}
+                            {% if perm_url and request.user.is_authenticated %}
+                                {% if request.user.is_superuser or request.user|has_role:'gerente' %}
+                                    <a href="{{ perm_url }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">Permissões</a>
+                                {% endif %}
                             {% endif %}
                         </div>
                     </div>
