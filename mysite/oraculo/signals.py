@@ -74,12 +74,20 @@ def task_treinar_ia(instance_id):
 
     db_path = settings.BASE_DIR / "banco_faiss"
     index_file = os.path.join(db_path, "index.faiss")
-    if os.path.exists(index_file):
-        vectordb = FAISS.load_local(
-            str(db_path), embeddings, allow_dangerous_deserialization=True
-        )
-        vectordb.add_documents(chunks)
-    else:
+    pkl_file = os.path.join(db_path, "index.pkl")
+
+    vectordb = None
+    if os.path.exists(index_file) and os.path.exists(pkl_file):
+        try:
+            vectordb = FAISS.load_local(
+                str(db_path), embeddings, allow_dangerous_deserialization=True
+            )
+            vectordb.add_documents(chunks)
+        except Exception as e:
+            print(f"[RAG] Aviso ao carregar índice existente ({e}). Criando nova base do zero...")
+            vectordb = None
+
+    if vectordb is None:
         vectordb = FAISS.from_documents(chunks, embeddings)
 
     vectordb.save_local(str(db_path))
