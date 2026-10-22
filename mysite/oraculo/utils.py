@@ -98,6 +98,9 @@ def get_vectordb():
     global _vectordb
 
     if _vectordb is None:
+        index_file = os.path.join(FAISS_PATH, "index.faiss")
+        if not os.path.exists(index_file):
+            return None
         embeddings = get_embeddings()
         _vectordb = FAISS.load_local(
             FAISS_PATH,
