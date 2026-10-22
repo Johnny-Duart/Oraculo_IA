@@ -1,6 +1,7 @@
 # 🤖 Oráculo IA — Chatbot com RAG + Integração WhatsApp
 
 Sistema web desenvolvido com **Django** que permite treinar uma IA personalizada a partir de **sites, textos e documentos**, utilizando técnicas de **RAG (Retrieval-Augmented Generation)** — com respostas disponíveis tanto por uma interface web quanto diretamente pelo **WhatsApp**.
+<img width="800" height="500" alt="demo-oraculo" src="https://github.com/user-attachments/assets/832d6687-feef-4b6f-beaf-5ea2d423633f" />
 
 ---
 
