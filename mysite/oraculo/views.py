@@ -47,8 +47,8 @@ def treinar_ia(request):
         tasks = Task.objects.all()
         return render(request, "treinar_ia.html", {"tasks": tasks})
     elif request.method == "POST":
-        site = request.POST.get("site")
-        conteudo = request.POST.get("conteudo")
+        site = request.POST.get("site") or ""
+        conteudo = request.POST.get("conteudo") or ""
         documento = request.FILES.get("documento")
 
         treinamento = Treinamento(
@@ -97,7 +97,8 @@ def stream_response(request):
             )
         except Exception:
             yield (
-                "Base de busca (FAISS) não encontrada ou erro ao carregar. Execute o treinamento em 'Treinar IA' antes de perguntar.\n"
+                "Ainda não aprendi nada! Minha memória está completamente vazia no momento. "
+                "Por favor, acesse a aba 'Treinar IA' e envie sites, textos ou documentos para que eu possa aprender!"
             )
             return
 
@@ -120,17 +121,20 @@ def stream_response(request):
             dt.save()
             pergunta.data_treinamento.add(dt)
 
-        contexto = ""
-        for i, doc in enumerate(docs_unicos, start=1):
-            contexto += f"\n[CONTEXTO {i}]\n{doc.page_content}\n"
+        trechos_contexto = [doc.page_content.strip() for doc in docs_unicos if doc.page_content.strip()]
+        contexto_formatado = "\n\n---\n\n".join(trechos_contexto)
 
         llm_messages = [
             {
                 "role": "system",
                 "content": (
-                    "Voce é um assistente virtual e deve responder com precisão as perguntas "
-                    "sobre o pdf, sem inventar nada. Lembre-se sempre de responder em portugues "
-                    f"\n\n{contexto}"
+                    "Você é a Iazete, uma assistente virtual inteligente, prestativa e amigável.\n"
+                    "Diretrizes obrigatórias:\n"
+                    "1. Responda à pergunta do usuário utilizando exclusivamente as informações presentes na base de conhecimento abaixo.\n"
+                    "2. NUNCA cite termos como 'contexto 1', 'segundo o contexto', 'de acordo com o texto fornecido' ou metadados internos. Fale naturalmente com o usuário em português, como uma assistente oficial bem informada.\n"
+                    "3. Se a informação solicitada não estiver na base de conhecimento, diga educadamente que ainda não possui essa informação.\n"
+                    "4. Não invente ou presuma informações além do que consta na base.\n\n"
+                    f"Base de Conhecimento:\n{contexto_formatado}"
                 ),
             },
             {
@@ -158,11 +162,6 @@ def ver_fontes(request, id):
     except Pergunta.DoesNotExist:
         raise Http404("Pergunta não encontrada.")
 
-    for i in pergunta.data_treinamento.all():
-        print(i.metadata)
-        print(i.texto)
-        print("---")
-    print(pergunta.pergunta)
     return render(request, "ver_fontes.html", {"pergunta": pergunta})
 
 
