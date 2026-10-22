@@ -159,3 +159,6 @@ CACHES = {
 CSRF_TRUSTED_ORIGINS = [
     "https://equate-chloride-penny.ngrok-free.dev",
 ]
+
+LOGIN_URL = "login"
+
