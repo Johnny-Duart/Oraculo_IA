@@ -66,29 +66,85 @@ def login(request):
         return redirect("login")
 
 
-def permissoes(request):
-    if not request.user.is_superuser:
-        raise Http404()
-    users = User.objects.filter(is_superuser=False)
-    return render(request, "permissoes.html", {"users": users})
-
-
+from rolepermissions.checkers import has_role
 from rolepermissions.roles import assign_role
 
 
 @login_required
+def permissoes(request):
+    if not request.user.is_superuser and not has_role(request.user, "gerente"):
+        raise Http404()
+    users = User.objects.filter(is_superuser=False).exclude(id=request.user.id)
+    return render(request, "permissoes.html", {"users": users})
+
+
+@login_required
 def tornar_gerente(request, id):
+    if not request.user.is_superuser and not has_role(request.user, "gerente"):
+        raise Http404()
     user = User.objects.get(id=id)
     assign_role(user, "gerente")
+    messages.add_message(
+        request,
+        constants.SUCCESS,
+        f"Permissão de Gerente concedida a '{user.username}'.",
+    )
     return redirect("permissoes")
 
 
 @login_required
 def remover_gerente(request, user_id):
+    if not request.user.is_superuser and not has_role(request.user, "gerente"):
+        raise Http404()
     user = User.objects.get(id=user_id)
-    grupo = Group.objects.get(name="gerente")
+    try:
+        grupo = Group.objects.get(name="gerente")
+        user.groups.remove(grupo)
+        messages.add_message(
+            request,
+            constants.SUCCESS,
+            f"Permissão de Gerente removida de '{user.username}'.",
+        )
+    except Group.DoesNotExist:
+        pass
 
-    user.groups.remove(grupo)
+    return redirect("permissoes")
+
+
+@login_required
+def excluir_usuario(request, user_id):
+    if not request.user.is_superuser and not has_role(request.user, "gerente"):
+        raise Http404()
+
+    if request.user.id == user_id:
+        messages.add_message(
+            request,
+            constants.ERROR,
+            "Você não pode excluir sua própria conta!",
+        )
+        return redirect("permissoes")
+
+    try:
+        user_to_delete = User.objects.get(id=user_id)
+        if user_to_delete.is_superuser:
+            messages.add_message(
+                request,
+                constants.ERROR,
+                "Não é permitido excluir um superusuário!",
+            )
+            return redirect("permissoes")
+
+        nome = user_to_delete.username
+        user_to_delete.delete()
+        messages.add_message(
+            request,
+            constants.SUCCESS,
+            f"Funcionário '{nome}' foi apagado do banco de dados com sucesso!",
+        )
+    except User.DoesNotExist:
+        messages.add_message(
+            request, constants.ERROR, "Funcionário não encontrado."
+        )
 
     return redirect("permissoes")
 
@@ -97,6 +153,6 @@ from django.contrib.auth import logout as auth_logout
 
 
 def logout_view(request):
-    """Desloga o usuário e redireciona para a tela de login."""
+
     auth_logout(request)
     return redirect("login")
