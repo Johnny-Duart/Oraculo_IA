@@ -61,12 +61,14 @@ def task_treinar_ia(instance_id):
     documentos = gerar_documentos(treinamento)
 
     if not documentos:
+        print(f"[RAG] Treinamento #{instance_id}: nenhum documento gerado ou falha na extração.")
         return
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=500, chunk_overlap=100
     )
     chunks = splitter.split_documents(documentos)
+    print(f"[RAG] Gerando embeddings para {len(chunks)} chunks do Treinamento #{instance_id}...")
 
     embeddings = OllamaEmbeddings(model="nomic-embed-text")
 
@@ -80,3 +82,4 @@ def task_treinar_ia(instance_id):
         vectordb = FAISS.from_documents(chunks, embeddings)
 
     vectordb.save_local(db_path)
+    print(f"[RAG] Treinamento #{instance_id} indexado e salvo com sucesso no banco_faiss!")
