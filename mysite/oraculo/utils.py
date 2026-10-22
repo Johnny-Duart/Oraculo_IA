@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -61,11 +62,12 @@ else:
 
 
 SYSTEM_PROMPT = """
-Você é um assistente virtual.
-Responda apenas utilizando as informações presentes no contexto.
-Nunca invente respostas.
-Sempre responda em português.
-Contexto:
+Você é a Iazete, uma assistente virtual inteligente, prestativa e cordial.
+Responda diretamente à pergunta utilizando exclusivamente as informações da base de conhecimento abaixo.
+Nunca use termos ou expressões como "de acordo com o contexto", "no contexto 1", "segundo as informações fornecidas". Responda de forma natural, direta e profissional em português.
+Se a informação necessária não estiver na base, informe educadamente que não possui essa informação cadastrada.
+
+Base de conhecimento:
 {context}
 """
 
@@ -110,17 +112,48 @@ def html_para_texto_rag(html_str: str) -> str:
     if BeautifulSoup is None:
         return html_str
     soup = BeautifulSoup(html_str, "html.parser")
+
+    # 1. Remover scripts, estilos, navegações, rodapés e formulários que poluem o RAG
+    for tag in soup(["script", "style", "nav", "footer", "header", "aside", "noscript", "svg", "form", "button"]):
+        tag.decompose()
+
+    # 2. Remover elementos de navegação e edição específicos (ex.: Wikipedia)
+    for noise in soup.find_all(class_=re.compile(r"mw-editsection|reference|catlinks|mw-jump-link|navbox|sidebar|portal")):
+        noise.decompose()
+
+    # 3. Focar no container principal do conteúdo se existir
+    content_root = (
+        soup.find("div", id="mw-content-text")
+        or soup.find("main")
+        or soup.find("article")
+        or soup.find("div", id="content")
+        or soup.find("div", class_=re.compile(r"content|post|article|body", re.I))
+        or soup.body
+        or soup
+    )
+
     texto_final = []
-    for tag in soup.find_all(["h1", "h2", "h3", "p", "li"]):
-        texto = tag.get_text(strip=True)
+    for tag in content_root.find_all(["h1", "h2", "h3", "h4", "p", "li"]):
+        texto = tag.get_text(separator=" ", strip=True)
         if not texto:
             continue
-        if tag.name in ["h1", "h2", "h3"]:
+
+        # Limpar referências tipo [1], [2], [editar], etc.
+        texto = re.sub(r"\[\d+\]", "", texto)
+        texto = re.sub(r"\[editar.*?\]", "", texto)
+        texto = re.sub(r"\s+([.,;:!?])", r"\1", texto)
+        texto = re.sub(r"\s+", " ", texto).strip()
+
+        if not texto or len(texto) < 3:
+            continue
+
+        if tag.name in ["h1", "h2", "h3", "h4"]:
             texto_final.append(f"\n\n### {texto.upper()}")
         elif tag.name == "li":
             texto_final.append(f" - {texto}")
         else:
             texto_final.append(texto)
+
     return "\n".join(texto_final).strip()
 
 
@@ -151,24 +184,36 @@ def gerar_documentos(instance):
                     doc.metadata["arquivo"] = instance.documento.url
                     documentos.append(doc)
         except Exception as e:
-            print("Erro ao carregar PDF:", e)
+            print("[RAG] Erro ao carregar PDF:", e)
 
-    if instance.conteudo:
-        documentos.append(_make_doc(instance.conteudo, "Conteúdo digitado"))
+    if instance.conteudo and instance.conteudo.strip():
+        documentos.append(_make_doc(instance.conteudo.strip(), "Conteúdo digitado"))
 
     if instance.site and requests is not None:
-        try:
-            url = (
-                instance.site
-                if instance.site.startswith("https://")
-                else f"https://{instance.site}"
-            )
-            resp = requests.get(url, timeout=10)
-            resp.raise_for_status()
-            content = html_para_texto_rag(resp.text)
-            documentos.append(_make_doc(content, instance.site))
-        except Exception:
-            pass
+        raw_site = instance.site.strip()
+        if raw_site:
+            url = raw_site if (raw_site.startswith("http://") or raw_site.startswith("https://")) else f"https://{raw_site}"
+            try:
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                    "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                }
+                resp = requests.get(url, headers=headers, timeout=15)
+                resp.raise_for_status()
+
+                # Garantir encoding correto (UTF-8) para caracteres em português
+                if resp.encoding is None or resp.encoding.lower() == "iso-8859-1":
+                    resp.encoding = resp.apparent_encoding or "utf-8"
+
+                content = html_para_texto_rag(resp.text)
+                if content:
+                    documentos.append(_make_doc(content, url))
+                    print(f"[RAG] Sucesso ao extrair {len(content)} caracteres do site: {url}")
+                else:
+                    print(f"[RAG] Aviso: Nenhum texto aproveitável extraído do site: {url}")
+            except Exception as e:
+                print(f"[RAG] Erro ao extrair conteúdo do site {url}: {e}")
 
     return documentos
 
