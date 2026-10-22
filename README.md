@@ -33,8 +33,7 @@ A proposta é simular um sistema real de IA corporativa, onde usuários treinam 
 - ✅ Rastreabilidade de fontes com suporte total a Unicode e tratamento dinâmico de links e mídias
 - ✅ **Integração com WhatsApp via Evolution API** — respostas automatizadas e contextualizadas
 - ✅ Buffer inteligente de mensagens (agrupa envios consecutivos antes de processar)
-- ✅ Autenticação de webhook (validação estrita de apikey)
-- ✅ **40 testes automatizados** cobrindo autenticação, permissões, RAG, scraping e segurança
+- ✅ **72 testes automatizados** cobrindo autenticação, permissões, RAG, scraping, segurança (CSRF, RBAC, SQLi, XSS, Path Traversal) e integridade
 
 ---
 
@@ -151,7 +150,7 @@ Depois, registre a URL gerada pelo ngrok como webhook na Evolution API (`.../ora
 
 ### Testes Automatizados
 
-A aplicação conta com uma suíte de 40 testes automatizados cobrindo autenticação, permissões, RAG, scraping e segurança:
+A aplicação conta com uma suíte de **72 testes automatizados** cobrindo fluxos funcionais e testes rigorosos de segurança (RBAC, CSRF, XSS, SQLi, Path Traversal e integridade):
 
 ```bash
 # Rodar com Poetry (recomendado)
@@ -178,11 +177,16 @@ python manage.py test
 ### 3. 👥 Controle de Acesso e Segurança (RBAC)
 * **Gestão Hierárquica:** Acesso diferenciado para Gerentes e Funcionários comuns com validação estrita em rotas sensíveis via `django-role-permissions`.
 * **Travas de Segurança:** Regras de integridade que bloqueiam auto-exclusão da própria conta e protegem contas de superusuários contra remoção indevida.
+* **Proteção de Rotas Internas:** Configuração de redirecionamento seguro (`LOGIN_URL`) para impedir acessos anônimos a rotas protegidas.
 
-### 4. 🧪 Engenharia de Software e Qualidade (40 Testes Automatizados)
+### 4. 🧪 Engenharia de Software e Qualidade (72 Testes Automatizados)
 Suíte robusta de testes automatizados garantindo a integridade e regressão zero da aplicação:
-* **App `usuarios` (18 testes):** Fluxos de autenticação, força de senhas, login/logout, rotinas de exclusão e controle de permissões.
-* **App `oraculo` (22 testes):** Modelos, parser semântico, chunking, sanitização de texto, suporte a caracteres Unicode especiais e validação de segurança no webhook do WhatsApp.
+* **App `usuarios` (37 testes):**
+  - 18 testes funcionais: fluxos de autenticação, força de senhas, cadastro, login/logout, permissões e exclusão.
+  - 19 testes de segurança: proteção contra escalada de privilégios (RBAC), bloqueio de auto-exclusão e superusuários, hashing seguro de senhas (PBKDF2/Argon2), proteção contra CSRF em formulários sensíveis, sanitização contra XSS e SQL Injection no login, e cabeçalhos HTTP de segurança (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`).
+* **App `oraculo` (35 testes):**
+  - 22 testes funcionais: modelos, parser semântico, chunking, sanitização de texto, suporte a caracteres Unicode especiais e validação de webhook.
+  - 13 testes de segurança: controle de acesso em rotas internas do RAG, autenticação estrita do webhook WhatsApp com API Key (`401 Unauthorized`), tratamento seguro de JSON corrompido (`400 Bad Request`), sanitização de tags perigosas (`<script>`, `<iframe>`, `<style>`) antes de vetorização, parametrização contra SQL Injection no chat/RAG e proteção contra Path Traversal no upload de documentos.
 
 ```bash
 # Rodar a suíte completa de testes
